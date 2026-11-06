@@ -1,0 +1,386 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bike Quiz 🚴</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #101820, #183d32);
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 600px;
+      background: #1c292d;
+      border: 2px solid #8df542;
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 0 30px #8df54222;
+    }
+
+    h1 {
+      text-align: center;
+      color: #8df542;
+      font-size: 2.3rem;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #c8d6ce;
+      margin-bottom: 25px;
+    }
+
+    .info {
+      display: flex;
+      justify-content: space-between;
+      color: #8df542;
+      font-weight: bold;
+      margin-bottom: 15px;
+    }
+
+    .progress {
+      height: 8px;
+      background: #394649;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 25px;
+    }
+
+    #progressBar {
+      width: 0%;
+      height: 100%;
+      background: #8df542;
+      transition: width 0.3s;
+    }
+
+    #question {
+      font-size: 1.3rem;
+      line-height: 1.5;
+      margin-bottom: 20px;
+    }
+
+    .answers {
+      display: grid;
+      gap: 12px;
+    }
+
+    .answer {
+      padding: 14px;
+      border: 1px solid #53645e;
+      background: #29383a;
+      color: white;
+      border-radius: 10px;
+      cursor: pointer;
+      text-align: left;
+      font-size: 1rem;
+      transition: 0.2s;
+    }
+
+    .answer:hover:not(:disabled) {
+      border-color: #8df542;
+      background: #344b3b;
+      transform: translateY(-2px);
+    }
+
+    .answer:disabled {
+      cursor: default;
+      opacity: 0.85;
+    }
+
+    .correct {
+      background: #245b36 !important;
+      border-color: #8df542 !important;
+    }
+
+    .wrong {
+      background: #702d32 !important;
+      border-color: #ff7474 !important;
+    }
+
+    #feedback {
+      min-height: 28px;
+      margin: 18px 0;
+      line-height: 1.5;
+    }
+
+    .main-button {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 10px;
+      background: #8df542;
+      color: #142016;
+      font-size: 1.05rem;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    .main-button:hover {
+      background: #aaff72;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    #result {
+      text-align: center;
+    }
+
+    #result h2 {
+      color: #8df542;
+      font-size: 2rem;
+    }
+
+    .bike {
+      text-align: center;
+      font-size: 4rem;
+      margin: 10px;
+    }
+  </style>
+</head>
+
+<body>
+  <main class="container">
+    <div class="bike">🚴</div>
+    <h1>BIKE QUIZ</h1>
+    <p class="subtitle">Teste seus conhecimentos sobre o mundo das bikes!</p>
+
+    <section id="quiz">
+      <div class="info">
+        <span id="counter">Pergunta 1 de 8</span>
+        <span id="score">Pontos: 0</span>
+      </div>
+
+      <div class="progress">
+        <div id="progressBar"></div>
+      </div>
+
+      <h2 id="question"></h2>
+      <div id="answers" class="answers"></div>
+      <p id="feedback" aria-live="polite"></p>
+
+      <button id="nextButton" class="main-button hidden">
+        Próxima pergunta →
+      </button>
+    </section>
+
+    <section id="result" class="hidden">
+      <h2>Quiz finalizado!</h2>
+      <p id="finalScore"></p>
+      <p id="message"></p>
+      <button class="main-button" onclick="restartQuiz()">
+        🔄 Jogar novamente
+      </button>
+    </section>
+  </main>
+
+  <script>
+    const questions = [
+      {
+        question: "1. Qual equipamento protege a cabeça do ciclista?",
+        answers: ["Luvas", "Capacete", "Joelheira", "Óculos"],
+        correct: 1
+      },
+      {
+        question: "2. Qual parte da bike transmite a força dos pedais à roda traseira?",
+        answers: ["Guidão", "Selim", "Corrente", "Freio"],
+        correct: 2
+      },
+      {
+        question: "3. Para que serve o freio de uma bicicleta?",
+        answers: [
+          "Aumentar a velocidade",
+          "Mudar a marcha",
+          "Ajustar o selim",
+          "Reduzir a velocidade ou parar"
+        ],
+        correct: 3
+      },
+      {
+        question: "4. Qual bicicleta é normalmente projetada para trilhas e terrenos irregulares?",
+        answers: [
+          "Mountain bike (MTB)",
+          "Bicicleta urbana dobrável",
+          "Bicicleta de passeio",
+          "Bicicleta infantil"
+        ],
+        correct: 0
+      },
+      {
+        question: "5. Qual peça usamos para direcionar a bicicleta?",
+        answers: ["Pedal", "Guidão", "Corrente", "Pneu"],
+        correct: 1
+      },
+      {
+        question: "6. O que devemos verificar antes de pedalar?",
+        answers: [
+          "Apenas a cor da bicicleta",
+          "Somente o selim",
+          "Freios, pneus e condições gerais",
+          "Apenas a campainha"
+        ],
+        correct: 2
+      },
+      {
+        question: "7. Para que servem as marchas da bicicleta?",
+        answers: [
+          "Facilitar a pedalada em diferentes terrenos",
+          "Acender as luzes",
+          "Substituir os freios",
+          "Aumentar o tamanho das rodas"
+        ],
+        correct: 0
+      },
+      {
+        question: "8. Qual atitude ajuda a tornar o pedal mais seguro?",
+        answers: [
+          "Pedalar olhando o celular",
+          "Ignorar os sinais de trânsito",
+          "Andar sem verificar os freios",
+          "Respeitar as regras de trânsito e sinalizar manobras"
+        ],
+        correct: 3
+      }
+    ];
+
+    let currentQuestion = 0;
+    let points = 0;
+    let answered = false;
+
+    const questionElement = document.getElementById("question");
+    const answersElement = document.getElementById("answers");
+    const feedbackElement = document.getElementById("feedback");
+    const nextButton = document.getElementById("nextButton");
+
+    function showQuestion() {
+      answered = false;
+
+      const q = questions[currentQuestion];
+
+      document.getElementById("counter").textContent =
+        `Pergunta ${currentQuestion + 1} de ${questions.length}`;
+
+      document.getElementById("score").textContent =
+        `Pontos: ${points}`;
+
+      document.getElementById("progressBar").style.width =
+        `${(currentQuestion / questions.length) * 100}%`;
+
+      questionElement.textContent = q.question;
+      answersElement.innerHTML = "";
+      feedbackElement.textContent = "";
+      nextButton.classList.add("hidden");
+
+      q.answers.forEach((answer, index) => {
+        const button = document.createElement("button");
+
+        button.className = "answer";
+        button.textContent = `${String.fromCharCode(65 + index)}) ${answer}`;
+        button.addEventListener("click", () => checkAnswer(index));
+
+        answersElement.appendChild(button);
+      });
+    }
+
+    function checkAnswer(selected) {
+      if (answered) return;
+
+      answered = true;
+
+      const q = questions[currentQuestion];
+      const buttons = answersElement.querySelectorAll("button");
+
+      buttons.forEach(button => button.disabled = true);
+
+      if (selected === q.correct) {
+        points++;
+        feedbackElement.textContent = "✅ Muito bem! Resposta correta!";
+        buttons[selected].classList.add("correct");
+      } else {
+        feedbackElement.textContent =
+          `❌ Não foi dessa vez! Resposta correta: ${q.answers[q.correct]}.`;
+
+        buttons[selected].classList.add("wrong");
+        buttons[q.correct].classList.add("correct");
+      }
+
+      document.getElementById("score").textContent =
+        `Pontos: ${points}`;
+
+      document.getElementById("progressBar").style.width =
+        `${((currentQuestion + 1) / questions.length) * 100}%`;
+
+      nextButton.textContent =
+        currentQuestion === questions.length - 1
+          ? "Ver resultado 🏆"
+          : "Próxima pergunta →";
+
+      nextButton.classList.remove("hidden");
+    }
+
+    nextButton.addEventListener("click", () => {
+      currentQuestion++;
+
+      if (currentQuestion < questions.length) {
+        showQuestion();
+      } else {
+        showResult();
+      }
+    });
+
+    function showResult() {
+      document.getElementById("quiz").classList.add("hidden");
+      document.getElementById("result").classList.remove("hidden");
+
+      document.getElementById("progressBar").style.width = "100%";
+
+      document.getElementById("finalScore").textContent =
+        `Você acertou ${points} de ${questions.length} perguntas!`;
+
+      let message;
+
+      if (points === questions.length) {
+        message = "🏆 Lenda das bikes! Você domina o assunto!";
+      } else if (points >= 6) {
+        message = "🚵 Mandou muito bem! Você entende bastante de bikes!";
+      } else if (points >= 4) {
+        message = "🚴 Bom trabalho! Continue pedalando e aprendendo!";
+      } else {
+        message = "🔧 Continue praticando! Cada pedal é um aprendizado.";
+      }
+
+      document.getElementById("message").textContent = message;
+    }
+
+    function restartQuiz() {
+      currentQuestion = 0;
+      points = 0;
+
+      document.getElementById("quiz").classList.remove("hidden");
+      document.getElementById("result").classList.add("hidden");
+
+      showQuestion();
+    }
+
+    showQuestion();
+  </script>
+</body>
+</html>
